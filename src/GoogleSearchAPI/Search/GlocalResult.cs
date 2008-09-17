@@ -22,12 +22,12 @@
  * THE SOFTWARE.
  */
 
+using System.Runtime.Serialization;
 using System.Text;
-using Newtonsoft.Json;
 
 namespace Google.API.Search
 {
-    [JsonObject]
+    [DataContract]
     internal class GlocalResult : ILocalResult
     {
         private static readonly int s_TbWidth = 150;
@@ -36,115 +36,115 @@ namespace Google.API.Search
         /// <summary>
         /// Indicates the "type" of result.
         /// </summary>
-        [JsonProperty("GsearchResultClass")]
+        [DataMember(Name = "GsearchResultClass")]
         public string GSearchResultClass { get; private set; }
 
-        [JsonProperty("viewportmode")]
+        [DataMember(Name = "viewportmode")]
         public string ViewportMode { get; private set; }
 
         /// <summary>
         /// Supplies the title for the result. In some cases, the title and the streetAddress are the same. This typically occurs when the search term is a street address such as 1231 Lisa Lane, Los Altos, CA. 
         /// </summary>
-        [JsonProperty("title")]
+        [DataMember(Name = "title")]
         public string Title { get; private set; }
 
         /// <summary>
         /// Supplies the title, but unlike .title, this property is stripped of html markup (e.g., &lt;b&gt;, &lt;i&gt;, etc.) 
         /// </summary>
-        [JsonProperty("titleNoFormatting")]
+        [DataMember(Name = "titleNoFormatting")]
         public string TitleNoFormatting { get; private set; }
 
         /// <summary>
         /// Supplies a url to a Google Maps Details page associated with the search result 
         /// </summary>
-        [JsonProperty("url")]
+        [DataMember(Name = "url")]
         public string Url { get; private set; }
 
         /// <summary>
         /// Supplies the latitude value of the result.
         /// </summary>
-        [JsonProperty("lat")]
+        [DataMember(Name = "lat")]
         public float Latitude { get; private set; }
 
         /// <summary>
         /// Supplies the longitude value of the result.
         /// </summary>
-        [JsonProperty("lng")]
+        [DataMember(Name = "lng")]
         public float Longitude { get; private set; }
 
         /// <summary>
         /// Supplies the street address and number for the given result. Note:, in some cases, this property may be set to "" if the result has no known street address. address line. 
         /// </summary>
-        [JsonProperty("streetAddress")]
+        [DataMember(Name = "streetAddress")]
         public string StreetAddress { get; private set; }
 
         /// <summary>
         /// Supplies the city name for the result. Note:, in some cases, this property may be set to "". 
         /// </summary>
-        [JsonProperty("city")]
+        [DataMember(Name = "city")]
         public string City { get; private set; }
 
         /// <summary>
         /// Supplies a region name for the result (e.g., in the us, this is typically a state abbreviation, in other regions it might be a province, etc.) Note:, in some cases, this property may be set to "". 
         /// </summary>
-        [JsonProperty("region")]
+        [DataMember(Name = "region")]
         public string Region { get; private set; }
 
         /// <summary>
         /// Supplies a country name for the result. Note:, in some cases, this property may be set to "". 
         /// </summary>
-        [JsonProperty("country")]
+        [DataMember(Name = "country")]
         public string Country { get; private set; }
 
         /// <summary>
         /// Supplies an array of phone number objects
         /// </summary>
-        [JsonProperty("phoneNumbers")]
+        [DataMember(Name = "phoneNumbers")]
         public PhoneNumber[] PhoneNumbers { get; private set; }
 
         /// <summary>
         /// Supplies a url that can be used to provide driving directions from the center of the set of search results to this search result. Note, in some cases this property may be missing or null.
         /// </summary>
-        [JsonProperty("ddUrl")]
+        [DataMember(Name = "ddUrl")]
         public string DirectionUrl { get; private set; }
 
         /// <summary>
         /// Supplies a url that can be used to provide driving directions from a user specified location to this search result. Note, in some cases this property may be missing or null.
         /// </summary>
-        [JsonProperty("ddUrlToHere")]
+        [DataMember(Name = "ddUrlToHere")]
         public string ToHereDirectionUrl { get; private set; }
 
         /// <summary>
         /// Supplies a url that can be used to provide driving directions from this search result to a user specified location. Note, in some cases this property may be missing or null.
         /// </summary>
-        [JsonProperty("ddUrlFromHere")]
+        [DataMember(Name = "ddUrlFromHere")]
         public string FromHereDirectionUrl { get; private set; }
 
         /// <summary>
         /// Supplies a url to a static map image representation of the current result. The image is 150px wide by 100px tall with a single marker representing the current location. Expected usage is to hyperlink this image using the url property.
         /// </summary>
-        [JsonProperty("staticMapUrl")]
+        [DataMember(Name = "staticMapUrl")]
         public string StaticMapUrl { get; private set; }
 
         /// <summary>
         /// This property indicates the type of this result which can either be "local" in the case of a local business listing or geocode result, or "kml" in the case of a KML listing. 
         /// </summary>
-        [JsonProperty("listingType")]
+        [DataMember(Name = "listingType")]
         public string ListingType { get; private set; }
 
         /// <summary>
         /// For "kml" results, this property contains a content snippet associated with the KML result. For "local" results, this property is the empty string.
         /// </summary>
-        [JsonProperty("content")]
+        [DataMember(Name = "content")]
         public string Content { get; private set; }
 
-        [JsonProperty("addressLookupResult")]
+        [DataMember(Name = "addressLookupResult")]
         public string AddressLookupResult { get; private set; }
 
-        [JsonProperty("postalCode")]
+        [DataMember(Name = "postalCode")]
         public string PostalCode { get; private set; }
 
-        [JsonProperty("addressLines")]
+        [DataMember(Name = "addressLines")]
         public string[] AddressLines { get; private set; }
 
         public override string ToString()

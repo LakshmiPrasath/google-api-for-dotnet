@@ -22,19 +22,20 @@
  * THE SOFTWARE.
  */
 
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace Google.API.Search
 {
+    [DataContract]
     internal class PhoneNumber : IPhoneNumber
     {
         /// <summary>
         /// The value of the .type property can me one of "main", "fax", "mobile", "data", or "". 
         /// </summary>
-        [JsonProperty("type")]
+        [DataMember(Name = "type")]
         public string Type { get; private set; }
 
-        [JsonProperty("number")]
+        [DataMember(Name = "number")]
         public string Number { get; private set; }
 
         public override string ToString()

@@ -23,93 +23,82 @@
  */
 
 using System;
-using System.IO;
-using System.Net;
-using System.Text;
-using Newtonsoft.Json;
+using System.ServiceModel.Channels;
+using System.ServiceModel.Web;
 
 namespace Google.API
 {
+    internal delegate T RequestCallback<T, TService>(TService service) where TService : class;
+
     internal class RequestUtility
     {
-        private static readonly Encoding s_Encoding = Encoding.UTF8;
+        private static Binding binding;
 
-        public static T GetResponseData<T>(WebRequest request)
+        public static Binding Binding
+        {
+            get
+            {
+                if (binding == null)
+                {
+                    var customBinding = new CustomBinding();
+                    var webMessageEncodingBindingElement = new WebMessageEncodingBindingElement() { ContentTypeMapper = new MyWebContentTypeMapper() };
+                    var httpTransportBindingElement = new HttpTransportBindingElement() { ManualAddressing = true };
+                    customBinding.Elements.Add(webMessageEncodingBindingElement);
+                    customBinding.Elements.Add(httpTransportBindingElement);
+                    binding = customBinding;
+                }
+                return binding;
+            }
+        }
+
+        public static T GetResponseData<T, TService>(
+            RequestCallback<ResultObject<T>, TService> request,
+            string address
+            ) where TService : class
+        {
+            return GetResponseData(request, new Uri(address));
+        }
+
+        public static T GetResponseData<T, TService>(
+            RequestCallback<ResultObject<T>, TService> request,
+            Uri address
+            ) where TService : class
         {
             if (request == null)
-            {
                 throw new ArgumentNullException("request");
-            }
 
-            string resultString;
-            try
-            {
-                using (WebResponse response = request.GetResponse())
-                {
-                    using (StreamReader reader = new StreamReader(response.GetResponseStream(), s_Encoding))
-                    {
-                        resultString = reader.ReadToEnd();
-                    }
-                }
-            }
-            catch (WebException ex)
-            {
-                throw new GoogleAPIException("Failed to get response.", ex);
-            }
-            catch (IOException ex)
-            {
-                throw new GoogleAPIException("Cannot read the response stream.", ex);
-            }
+            if (address == null)
+                throw new ArgumentNullException("address");
 
             ResultObject<T> resultObject;
             try
             {
-                resultObject = JavaScriptConvert.DeserializeObject<ResultObject<T>>(resultString);
+                resultObject = GetResultObject(request, address, Binding);
             }
             catch (Exception ex)
             {
-                throw new DeserializeException(typeof(ResultObject<T>), resultString, ex);
+                throw new GoogleAPIException("Failed to get response.", ex);
             }
 
             if (resultObject.ResponseStatus != ResponseStatusConstant.DefaultStatus)
-            {
                 throw new GoogleServiceException(resultObject.ResponseStatus, resultObject.ResponseDetails);
-            }
+
             return resultObject.ResponseData;
         }
 
-        public static T GetResponseData<T>(string url)
+        private static T GetResultObject<TService, T>(
+            RequestCallback<T, TService> request,
+            Uri address,
+            Binding binding
+            ) where TService : class
         {
-            if (url == null)
+            var channelFactory = new WebChannelFactory<TService>(binding, address);
+            var client = channelFactory.CreateChannel();
+            using (client as IDisposable)
             {
-                throw new ArgumentNullException("url");
+                var resultObject = request(client);
+                return resultObject;
             }
-            WebRequest request = WebRequest.Create(url);
-            return GetResponseData<T>(request);
-        }
-
-        public static T GetResponseData<T>(RequestBase request, int timeout)
-        {
-            WebRequest webRequest;
-            if (timeout != 0)
-            {
-                webRequest = request.GetWebRequest(timeout);
-            }
-            else
-            {
-                webRequest = request.GetWebRequest();
-            }
-
-            T responseData;
-            try
-            {
-                responseData = GetResponseData<T>(webRequest);
-            }
-            catch (DeserializeException ex)
-            {
-                throw new GoogleAPIException(string.Format("request:\"{0}\"", request), ex);
-            }
-            return responseData;
         }
     }
 }

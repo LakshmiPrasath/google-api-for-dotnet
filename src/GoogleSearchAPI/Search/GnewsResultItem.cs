@@ -23,12 +23,12 @@
  */
 
 using System;
+using System.Runtime.Serialization;
 using System.Text;
-using Newtonsoft.Json;
 
 namespace Google.API.Search
 {
-    [JsonObject]
+    [DataContract]
     internal class GnewsResultItem : INewsResultItem
     {
         private string m_PlainTitle;
@@ -38,46 +38,46 @@ namespace Google.API.Search
         /// <summary>
         /// Supplies the title value of the result.
         /// </summary>
-        [JsonProperty("title")]
+        [DataMember(Name = "title")]
         public string Title { get; protected set; }
 
         /// <summary>
         /// Supplies the title, but unlike .title, this property is stripped of html markup (e.g., &lt;b&gt;, &lt;i&gt;, etc.)
         /// </summary>
-        [JsonProperty("titleNoFormatting")]
+        [DataMember(Name = "titleNoFormatting")]
         public string TitleNoFormatting { get; protected set; }
 
         /// <summary>
         /// Supplies the raw URL of the result.
         /// </summary>
-        [JsonProperty("unescapedUrl")]
+        [DataMember(Name = "unescapedUrl")]
         public string UnescapedUrl { get; protected set; }
 
         /// <summary>
         /// Supplies an escaped version of the above URL.
         /// </summary>
-        [JsonProperty("url")]
+        [DataMember(Name = "url")]
         public string Url { get; protected set; }
 
         /// <summary>
         /// Supplies the name of the publisher of the news story.
         /// </summary>
-        [JsonProperty("publisher")]
+        [DataMember(Name = "publisher")]
         public string Publisher { get; protected set; }
 
         /// <summary>
         /// Contains the location of the news story. This is a list of locations in most specific to least specific order where the components are seperated by ",". Note, there may only be one element in the list... A typical value for this property is "Edinburgh,Scotland,UK" or possibly "USA".
         /// </summary>
-        [JsonProperty("location")]
+        [DataMember(Name = "location")]
         public string Location { get; protected set; }
 
         /// <summary>
         /// Supplies the published date (rfc-822 format) of the news story referenced by this search result.
         /// </summary>
-        [JsonProperty("publishedDate")]
-        public DateTime PublishedDate { get; protected set; }
+        [DataMember(Name = "publishedDate")]
+        public string PublishedDateString { get; protected set; }
 
-        [JsonProperty("signedRedirectUrl")]
+        [DataMember(Name = "signedRedirectUrl")]
         public string SignedRedirectUrl { get; private set; }
 
         public override string ToString()
@@ -109,12 +109,15 @@ namespace Google.API.Search
         {
             get
             {
-                if (TitleNoFormatting == null)
+                if(TitleNoFormatting == null)
+                {
                     return null;
+                }
 
                 if (m_PlainTitle == null)
+                {
                     m_PlainTitle = HttpUtility.HtmlDecode(TitleNoFormatting);
-
+                }
                 return m_PlainTitle;
             }
         }
@@ -123,12 +126,12 @@ namespace Google.API.Search
         {
             get
             {
-                if (Publisher == null)
+                if(Publisher == null)
                 {
                     return null;
                 }
 
-                if (m_PlainPublisher == null)
+                if(m_PlainPublisher == null)
                 {
                     m_PlainPublisher = HttpUtility.HtmlDecode(Publisher);
                 }
@@ -140,12 +143,12 @@ namespace Google.API.Search
         {
             get
             {
-                if (Location == null)
+                if(Location == null)
                 {
                     return null;
                 }
 
-                if (m_PlainLocation == null)
+                if(m_PlainLocation == null)
                 {
                     m_PlainLocation = HttpUtility.HtmlDecode(Location);
                 }
@@ -155,7 +158,10 @@ namespace Google.API.Search
 
         DateTime INewsResultItem.PublishedDate
         {
-            get { return PublishedDate; }
+            get
+            {
+                return SearchUtility.RFC2822DateTimeParse(PublishedDateString);
+            }
         }
 
         #endregion

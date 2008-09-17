@@ -27,30 +27,60 @@ using System;
 namespace Google.API.Translate
 {
     /// <summary>
+    /// Translate format.
+    /// </summary>
+    public enum TranslateFormat
+    {
+        /// <summary>
+        /// Text format. Default value.
+        /// </summary>
+        text = 0,
+        /// <summary>
+        /// Html format.
+        /// </summary>
+        html,
+    }
+
+    /// <summary>
     /// Utility class for translate and detect.
     /// </summary>
     public static class Translator
     {
-        private static int s_Timeout = 0;
+        private static string addressString = "http://ajax.googleapis.com/ajax/services/language";
 
-        /// <summary>
-        /// Get or set the length of time, in milliseconds, before the request times out.
-        /// </summary>
-        public static int Timeout
+        private static Uri address;
+
+        private static Uri Address
         {
             get
             {
-                return s_Timeout;
-            }
-            set
-            {
-                if (s_Timeout < 0)
-                {
-                    throw new ArgumentOutOfRangeException("value");
-                }
-                s_Timeout = value;
+                if (address == null)
+                    address = new Uri(addressString);
+
+                return address;
             }
         }
+
+        //private static int s_Timeout = 0;
+
+        ///// <summary>
+        ///// Get or set the length of time, in milliseconds, before the request times out.
+        ///// </summary>
+        //public static int Timeout
+        //{
+        //    get
+        //    {
+        //        return s_Timeout;
+        //    }
+        //    set
+        //    {
+        //        if (s_Timeout < 0)
+        //        {
+        //            throw new ArgumentOutOfRangeException("value");
+        //        }
+        //        s_Timeout = value;
+        //    }
+        //}
 
         /// <summary>
         /// Translate the text from <paramref name="from"/> to <paramref name="to"/>.
@@ -199,9 +229,7 @@ namespace Google.API.Translate
                 throw new ArgumentNullException("to");
             }
 
-            TranslateRequest request = new TranslateRequest(text, from, to, format);
-
-            TranslateData responseData = RequestUtility.GetResponseData<TranslateData>(request, Timeout);
+            var responseData = GetResponseData(service => service.Translate(text, from + '|' + to, format.GetString()));
 
             return responseData;
         }
@@ -213,11 +241,21 @@ namespace Google.API.Translate
                 throw new ArgumentNullException("text");
             }
 
-            DetectRequest request = new DetectRequest(text);
-
-            DetectData responseData = RequestUtility.GetResponseData<DetectData>(request, Timeout);
+            var responseData = GetResponseData(service => service.Detect(text));
 
             return responseData;
+        }
+
+        private static T GetResponseData<T>(RequestCallback<ResultObject<T>, ITranslateService> request)
+        {
+            return RequestUtility.GetResponseData(request, Address);
+        }
+
+        private static string GetString(this TranslateFormat value)
+        {
+            if (Enum.IsDefined(value.GetType(), value))
+                return null;
+            return value.ToString();
         }
     }
 }

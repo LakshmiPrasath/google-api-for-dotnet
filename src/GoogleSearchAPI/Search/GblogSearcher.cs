@@ -32,26 +32,26 @@ namespace Google.API.Search
     /// </summary>
     public static class GblogSearcher
     {
-        private static int s_Timeout = 0;
+        //private static int s_Timeout = 0;
 
-        /// <summary>
-        /// Get or set the length of time, in milliseconds, before the request times out.
-        /// </summary>
-        public static int Timeout
-        {
-            get
-            {
-                return s_Timeout;
-            }
-            set
-            {
-                if (s_Timeout < 0)
-                {
-                    throw new ArgumentOutOfRangeException("value");
-                }
-                s_Timeout = value;
-            }
-        }
+        ///// <summary>
+        ///// Get or set the length of time, in milliseconds, before the request times out.
+        ///// </summary>
+        //public static int Timeout
+        //{
+        //    get
+        //    {
+        //        return s_Timeout;
+        //    }
+        //    set
+        //    {
+        //        if (s_Timeout < 0)
+        //        {
+        //            throw new ArgumentOutOfRangeException("value");
+        //        }
+        //        s_Timeout = value;
+        //    }
+        //}
 
         internal static SearchData<GblogResult> GSearch(string keyword, int start, ResultSize resultSize, SortType sortBy)
         {
@@ -60,10 +60,13 @@ namespace Google.API.Search
                 throw new ArgumentNullException("keyword");
             }
 
-            GblogSearchRequest request = new GblogSearchRequest(keyword, start, resultSize, sortBy);
-
-            SearchData<GblogResult> responseData =
-                RequestUtility.GetResponseData<SearchData<GblogResult>>(request, Timeout);
+            var responseData = SearchUtility.GetResponseData(
+                service => service.BlogSearch(
+                               keyword,
+                               resultSize.GetString(),
+                               start,
+                               sortBy.GetString())
+                );
 
             return responseData;
         }
@@ -115,9 +118,9 @@ namespace Google.API.Search
                 throw new ArgumentNullException("keyword");
             }
 
-            SearchUtility.GSearchCallback<GblogResult> gsearch = (start, resultSize) => GSearch(keyword, start, resultSize, sortBy);
+            GSearchCallback<GblogResult> gsearch = (start, resultSize) => GSearch(keyword, start, resultSize, sortBy);
             List<GblogResult> results = SearchUtility.Search(gsearch, resultCount);
-            return results.ConvertAll<IBlogResult>(item => (IBlogResult)item);
+            return results.ConvertAll(item => (IBlogResult)item);
         }
     }
 }

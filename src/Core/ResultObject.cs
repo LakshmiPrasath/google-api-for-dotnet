@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace Google.API
 {
@@ -32,16 +32,16 @@ namespace Google.API
         public const int OutOfRangeStatus = 400;
     }
 
-    [JsonObject(MemberSerialization.OptOut)]
+    [DataContract]
     internal class ResultObject<T>
     {
-        [JsonProperty("responseDetails")]
+        [DataMember(Name = "responseDetails")]
         public string ResponseDetails { get; private set; }
 
-        [JsonProperty("responseStatus")]
+        [DataMember(Name = "responseStatus")]
         public int ResponseStatus { get; private set; }
 
-        [JsonProperty("responseData")]
+        [DataMember(Name = "responseData")]
         public T ResponseData { get; private set; }
     }
 }

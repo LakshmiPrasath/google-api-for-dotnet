@@ -24,42 +24,42 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace Google.API.Search
 {
-    [JsonObject]
+    [DataContract]
     internal class LocalSearchData : ISearchData<GlocalResult>
     {
-        [JsonObject]
+        [DataContract]
         public class Point
         {
-            [JsonProperty("lat")]
+            [DataMember(Name = "lat")]
             public float Latitude { get; private set; }
-            [JsonProperty("lng")]
+            [DataMember(Name = "lng")]
             public float Longitude { get; private set; }
         }
 
-        [JsonObject]
+        [DataContract]
         public class ViewportObject
         {
-            [JsonProperty("center")]
+            [DataMember(Name = "center")]
             public Point center { get; private set; }
 
-            [JsonProperty("span")]
+            [DataMember(Name = "span")]
             public Point span { get; private set; }
 
-            [JsonProperty("sw")]
+            [DataMember(Name = "sw")]
             public Point sw { get; private set; }
 
-            [JsonProperty("ne")]
+            [DataMember(Name = "ne")]
             public Point ne { get; private set; }
         }
 
-        [JsonProperty("results")]
+        [DataMember(Name = "results")]
         public GlocalResult[] Results { get; private set; }
 
-        [JsonProperty("viewport")]
+        [DataMember(Name = "viewport")]
         public ViewportObject Viewport { get; private set; }
     }
 
@@ -68,27 +68,6 @@ namespace Google.API.Search
     /// </summary>
     public static class GlocalSearcher
     {
-        private static int s_Timeout = 0;
-
-        /// <summary>
-        /// Get or set the length of time, in milliseconds, before the request times out.
-        /// </summary>
-        public static int Timeout
-        {
-            get
-            {
-                return s_Timeout;
-            }
-            set
-            {
-                if (s_Timeout < 0)
-                {
-                    throw new ArgumentOutOfRangeException("value");
-                }
-                s_Timeout = value;
-            }
-        }
-
         internal static LocalSearchData GSearch(
             string keyword,
             int start,
@@ -104,9 +83,21 @@ namespace Google.API.Search
                 throw new ArgumentNullException("keyword");
             }
 
-            var request = new GlocalSearchRequest(keyword, start, resultSize, latitude, longitude, width, height, resultType);
+            var local = latitude + "," + longitude;
 
-            var responseData = RequestUtility.GetResponseData<LocalSearchData>(request, Timeout);
+            string bounding = null;
+            if (width != null && height != null)
+                bounding = width + "," + longitude;
+
+            var responseData = SearchUtility.GetResponseData(
+                service => service.LocalSearch(
+                               keyword,
+                               resultSize.GetString(),
+                               start,
+                               local,
+                               bounding,
+                               resultType.GetString())
+                );
 
             return responseData;
         }
@@ -247,7 +238,7 @@ namespace Google.API.Search
             if (keyword == null)
                 throw new ArgumentNullException("keyword");
 
-            SearchUtility.GSearchCallback<GlocalResult> gsearch = (start, resultSize) => GSearch(
+            GSearchCallback<GlocalResult> gsearch = (start, resultSize) => GSearch(
                                                                                keyword,
                                                                                start,
                                                                                resultSize,
